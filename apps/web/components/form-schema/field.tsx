@@ -1,53 +1,29 @@
 "use client";
 
 import { asFieldMeta } from "@flowd/flow/core/fieldMeta";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { match, P } from "ts-pattern";
-import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { ArrayField } from "./array-field";
+import { joinName } from "./provider";
 
-interface FieldProps {
+export interface FieldProps {
   schema: any;
-  className?: string;
   name?: string;
 }
 
-function joinName(...keys: (string | number | undefined)[]) {
-  keys = keys.filter((key) => typeof key === "number" || !!key);
+export function Field({ schema, name = "" }: FieldProps) {
+  const form = useFormContext();
 
-  return keys.join(".");
-}
-
-export function ArrayField({ schema, name, className }: FieldProps) {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-3">
-        <Label>{name}</Label>
-        <Button size="sm" onClick={() => setCount(count + 1)}>
-          Add
-          <PlusIcon className="size-4 ml-2" />
-        </Button>
-      </div>
-
-      <div className="space-y-4">
-        {Array.from({ length: count }).map((_, index) => {
-          return (
-            <div className="border p-3 rounded-md shadow-sm" key={index}>
-              <Field schema={schema} name={joinName(name, index)} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-export function Field({ schema, name, className }: FieldProps) {
   const field = match(schema)
     .with({ type: "object", description: P.string.optional() }, () => {
       return (
@@ -58,7 +34,6 @@ export function Field({ schema, name, className }: FieldProps) {
                 key={key}
                 schema={schema.properties[key]}
                 name={joinName(name, key)}
-                className="space-y-4"
               />
             );
           })}
@@ -66,7 +41,7 @@ export function Field({ schema, name, className }: FieldProps) {
       );
     })
     .with({ type: "array", description: P.string.optional() }, () => {
-      return <ArrayField schema={schema.items} name={name} />;
+      return <ArrayField schema={schema} name={name} />;
     })
     .with(
       { type: "string", description: P.string.optional() },
@@ -78,18 +53,24 @@ export function Field({ schema, name, className }: FieldProps) {
         ) : null;
 
         return (
-          <div>
-            <Label>
-              {label}
-              {required}
-            </Label>
-            <Input type="text" placeholder={label} name={name} />
-            {meta?.description && (
-              <p className="text-sm text-muted-foreground">
-                {meta.description}
-              </p>
+          <FormField
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {label} {required}
+                </FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder={label} {...field} />
+                </FormControl>
+                <FormMessage />
+                {meta?.description && (
+                  <FormDescription>{meta.description}</FormDescription>
+                )}
+              </FormItem>
             )}
-          </div>
+          />
         );
       },
     )
@@ -108,29 +89,64 @@ export function Field({ schema, name, className }: FieldProps) {
         ) : null;
 
         return (
-          <div>
-            <Label>
-              {label}
-              {required}
-            </Label>
-            <Input
-              type="number"
-              placeholder={label}
-              min={minimum}
-              max={maximum}
-            />
-            {meta?.description && (
-              <p className="text-sm text-muted-foreground">
-                {meta.description}
-              </p>
+          <FormField
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {label} {required}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={minimum}
+                    max={maximum}
+                    placeholder={label}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+                {meta?.description && (
+                  <FormDescription>{meta.description}</FormDescription>
+                )}
+              </FormItem>
             )}
-          </div>
+          />
         );
       },
     )
-    .with({ type: "boolean", description: P.string.optional() }, () => {
-      return <Checkbox />;
-    })
+    .with(
+      { type: "boolean", description: P.string.optional() },
+      ({ description }) => {
+        const meta = asFieldMeta(description);
+        const label = meta?.label ?? name;
+
+        return (
+          <FormField
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+
+                <div className="space-y-1 leading-none">
+                  <FormLabel>{label}</FormLabel>
+                  {meta?.description && (
+                    <FormDescription>{meta.description}</FormDescription>
+                  )}
+                </div>
+              </FormItem>
+            )}
+          />
+        );
+      },
+    )
     .otherwise(() => null);
 
   return field;

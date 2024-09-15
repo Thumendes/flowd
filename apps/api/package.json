@@ -1,19 +1,19 @@
 {
-  "name": "@flowd/flow",
+  "name": "api",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.58",
-    "@clack/prompts": "^0.7.0",
     "@flowd/utils": "*",
-    "ai": "^3.3.33",
+    "@hono/node-server": "^1.12.2",
     "dotenv": "^16.4.5",
-    "globby": "^14.0.2",
+    "hono": "^4.6.1",
     "ts-pattern": "^5.3.1",
     "tsx": "^4.19.1",
-    "zod": "^3.23.8",
-    "zod-to-json-schema": "^3.23.3"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@flowd/eslint-config": "*",

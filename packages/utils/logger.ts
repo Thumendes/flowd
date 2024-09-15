@@ -12,6 +12,10 @@ export class Logger {
     console.log(...this.prepareSections(message, args));
   }
 
+  success(message: string, ...args: any[]) {
+    console.log(...this.prepareSections(message, args, { color: chalk.green }));
+  }
+
   info(message: string, ...args: any[]) {
     console.info(...this.prepareSections(message, args, { color: chalk.blue }));
   }

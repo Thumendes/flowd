@@ -7,6 +7,8 @@ const meta = {
   temperature: fieldMeta("Temperature"),
   system: fieldMeta("System message"),
 
+  items: fieldMeta("Generated fields").required(),
+
   key: fieldMeta("Key").required(),
   description: fieldMeta("Description").required(),
 };
@@ -29,10 +31,12 @@ export const generateDataSchema = z.object({
     .optional()
     .describe(meta.temperature.get()),
 
-  items: z.array(
-    z.object({
-      key: z.string().describe(meta.key.get()),
-      description: z.string().describe(meta.description.get()),
-    }),
-  ),
+  items: z
+    .array(
+      z.object({
+        key: z.string().describe(meta.key.get()),
+        description: z.string().describe(meta.description.get()),
+      }),
+    )
+    .describe(meta.items.get()),
 });

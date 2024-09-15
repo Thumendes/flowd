@@ -4,17 +4,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-interface Registry {
-  name: string;
-  label: string;
-  description: string;
-  schema: { definitions: { schema: any } };
-}
+import { redirect } from "next/navigation";
+import { getRegistry } from "@/lib/services/registry";
 
 export default async function Home() {
-  const res = await fetch("http://localhost:4040/registry");
-  const data: Registry[] = await res.json();
+  const data = await getRegistry();
 
   return (
     <main className="container mx-auto">
